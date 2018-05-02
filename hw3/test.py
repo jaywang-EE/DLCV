@@ -1,4 +1,5 @@
 import sys
+import os
 from keras.layers import *#Input, Conv2D, MaxPooling2D, Dropout, Conv2DTranspose
 from keras.models import Model
 from keras.optimizers import SGD
@@ -13,34 +14,39 @@ from utils import *
 
 
 global Ntrain
-Ntrain = 257
+#Ntrain = 257
 
 Structure = "FCN32"
-modelName = "models/modelO"
+modelName = "FCNw22.hdf5"
 
-validPath = "datasetTV/validation/"
+#validPath = "datasetTV/validation/"
 
 
 def main():
     if len(sys.argv) > 1:
-        validPath = sys.argv[2]
+        validPath = sys.argv[2] + '/'
     if len(sys.argv) > 2:
-        predictPath = sys.argv[2]
+        predictPath = sys.argv[2] + '/'
     #IMGREAD
     readThrough = True
+    
+    file_list = [file for file in os.listdir(filepath) if file.endswith('.jpg')]
+    file_list.sort()
+    n_masks = len(file_list)
     jpg = []
-    for i in range(Ntrain):
-        jpgName = validPath + str(i).zfill(4) + "_sat.jpg"
-        readThrough = readThrough and TryImage(jpgName)
+    for i, file in enumerate(file_list):
+        print(i)
+        print(file)
+        readThrough = readThrough and TryImage(file)
         if readThrough:
-            jpg.append(mpimg.imread(jpgName)[np.newaxis,:])
+            jpg.append(mpimg.imread(file)[np.newaxis,:])
 
     if readThrough:
         print("IMGREAD")
     
     x_test = np.concatenate(jpg, axis=0)
 
-    model = FCN32(Nchannels)
+    model = FCN32(7)
 
     model.load_weights(modelName, by_name=True)
     print("LOADED",modelName)
@@ -49,13 +55,14 @@ def main():
     predShape = pred.shape
     print("predShape", predShape[1:])
     
-    for i in range(predShape[0]):
+    for i, file in enumerate(file_list):
+        print(os.path.splitext(file)[0] + '.jpg')
         array = pred[i]
         image = array.reshape(predShape[1:])
         image = int2dig(image)
-        mpimg.imsave(predictPath + str(i).zfill(4) + '_mask.png', image)
+        mpimg.imsave(predictPath + os.path.splitext(file)[0] + '.png', image)
         if i%100 == 10:
-            print(predictPath + str(i).zfill(4) + '_mask.png', image.shape)
+            print(predictPath + os.path.splitext(file)[0] + '.png', image.shape)
         
     
      
