@@ -17,7 +17,7 @@ global Ntrain
 #Ntrain = 257
 
 Structure = "FCN32"
-modelName = "FCNw22.hdf5"
+modelName = "FCN23.hdf5"
 
 #validPath = "datasetTV/validation/"
 
@@ -63,7 +63,7 @@ def main():
         array = pred[i]
         image = array.reshape(predShape[1:])
         image = int2dig(image)
-        mpimg.imsave(predictPath + os.path.splitext(file)[0] + '.png', image)
+        mpimg.imsave(predictPath + (file.split('_')[0]) + '_mask.png', image)
         '''
         if i%100 == 10:
             print(predictPath + os.path.splitext(file)[0] + '.png', image.shape)
