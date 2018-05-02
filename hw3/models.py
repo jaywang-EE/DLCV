@@ -34,7 +34,6 @@ def FCN32(n_classes):
 #FCN32
     vgg=Model(img_input, x)
     #vgg.summary()
-    vgg.load_weights("vgg16_weights_tf_dim_ordering_tf_kernels.h5", by_name=True)
     for layer in vgg.layers:
         layer.trainable = False
     o = Conv2D(4096, (7, 7), activation='relu', padding='same')(vgg.output)
@@ -56,7 +55,6 @@ def FCN32(n_classes):
     #o = (Permute((2, 3, 1)))(o)
     o = (Activation('softmax'))(o)
     model = Model( img_input , o )
-    model.load_weights("vgg16_weights_tf_dim_ordering_tf_kernels.h5", by_name=True)
     #model.summary()
     return model
 
