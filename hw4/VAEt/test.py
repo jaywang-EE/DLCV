@@ -25,6 +25,7 @@ load_model = "VAE.pkl"#"/home/jay/hw4/models/VAEt/VAE_051811_1params.pkl"
 np.set_printoptions(threshold=np.nan)
 
 def main():
+
     np.random.seed(326)
     torch.manual_seed(1)
     assert len(sys.argv) > 2, 'NO ENOUGH ARGV'
@@ -38,6 +39,7 @@ def main():
     encoder = E()
     decoder = D()
     model = VAE(encoder, decoder)
+    print(model)
     if Iscuda:
         model.cuda()
     model.load_state_dict(torch.load(load_model))
@@ -114,7 +116,7 @@ def main():
     
     print('*'*20, "DRAW", '*'*20)
     latent_tsne = tsne(latent, 2)
-    plot_scatter(latent_tsne, cls, "latent with tsne")
+    plot_scatter(latent_tsne, cls, "latent with tsne", predPath)
         
 if __name__ == "__main__":
     main()

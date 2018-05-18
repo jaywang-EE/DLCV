@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 
 
-def plot_scatter(x, labels, title, txt = False):
+def plot_scatter(x, labels, title, predPath, txt=False):
     plt.title(title)
     ax = plt.subplot()
     ax.scatter(x[:,0], x[:,1], c = labels)
@@ -23,7 +23,8 @@ def plot_scatter(x, labels, title, txt = False):
                 PathEffects.Stroke(linewidth=5, foreground="w"),
                 PathEffects.Normal()])
             txts.append(txt)
-    plt.show()
+    plt.savefig(predPath + 'latent_tsne.png')
+    #plt.show()
 
 def TryImage(filename):
     try:
