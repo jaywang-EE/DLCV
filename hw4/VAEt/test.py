@@ -25,7 +25,6 @@ load_model = "VAE.pkl"#"/home/jay/hw4/models/VAEt/VAE_051811_1params.pkl"
 np.set_printoptions(threshold=np.nan)
 
 def main():
-
     np.random.seed(326)
     torch.manual_seed(1)
     assert len(sys.argv) > 2, 'NO ENOUGH ARGV'
@@ -39,7 +38,7 @@ def main():
     encoder = E()
     decoder = D()
     model = VAE(encoder, decoder)
-    print(model)
+    #print(model)
     if Iscuda:
         model.cuda()
     model.load_state_dict(torch.load(load_model))
@@ -78,16 +77,35 @@ def main():
     f.close()
     cls = cls[:,9]#SMILE
     cls = cls.astype(int)
-    print(cls.shape)
+    #print(cls.shape)
     
     if readThrough:
         x_train_torch = torch.from_numpy(x_train).double()
         #cls = torch.from_numpy(cls).double()
     if Iscuda:
         x_train_torch = x_train_torch.cuda()
+
+#fig1_2
+    KLD = np.load('VAEt/KLD.npy')
+    mse = np.load('VAEt/Rec.npy')
+    
+    plt.subplot(1,2,1)
+    plt.title('KLD')
+    x_axix = list(range(len(KLD)))
+    plt.plot(x_axix, KLD)
+    plt.xlabel('steps')
+    plt.ylabel('loss')
+    
+    plt.subplot(1,2,2)
+    plt.title('MSE')
+    plt.plot(x_axix, mse)
+    plt.xlabel('steps')
+    plt.ylabel('loss')
+    plt.savefig(predPath + 'fig1_2.jpg')
 #TEST10
+    plt.figure(figsize=(40,20))
     print('*'*20, "REC", '*'*20)
-    print(x_train[0:10].shape)
+    #print(x_train[0:10].shape)
     x_train_torch_10 = torch.from_numpy(x_train[0:10]).double()
     if Iscuda:
         x_train_torch_10 = x_train_torch_10.cuda()
@@ -95,8 +113,14 @@ def main():
     x_rec = x_rec_gpu.cpu()
     pred = x_rec.data.numpy()
     for i in range(10):
+        plt.subplot(2, 5, i+1)
         image = np.array(pred[i]*256.).astype(int)
-        mpimg.imsave(predPath + "VAE10_" + str(i).zfill(2)+'.png', image)
+        plt.imshow(image)
+    plt.axis('off')
+    plt.savefig(predPath + 'fig1_3.jpg')
+    plt.close()
+
+    plt.figure(figsize=(40,20))
 #RAND32
     print('*'*20, "RND", '*'*20)
     noise = torch.randn(32, 512).double()
@@ -106,8 +130,14 @@ def main():
     x_fake = x_fake_gpu.cpu()
     pred = x_fake.data.numpy()
     for i in range(32):
+        plt.subplot(4, 8, i+1)
         image = np.array(pred[i]*256.).astype(int)
-        mpimg.imsave(predPath + "VAE32_" + str(i).zfill(2)+'.png', image)
+        plt.imshow(image)
+    plt.axis('off')
+    plt.savefig(predPath + 'fig1_4.jpg')
+    plt.close()
+    fig = plt.figure()
+
 #TSNE
     print('*'*20, "TSNE", '*'*20)
     y_latent_gpu = model.encoder(x_train_torch)
@@ -117,6 +147,5 @@ def main():
     print('*'*20, "DRAW", '*'*20)
     latent_tsne = tsne(latent, 2)
     plot_scatter(latent_tsne, cls, "latent with tsne", predPath)
-        
 if __name__ == "__main__":
     main()

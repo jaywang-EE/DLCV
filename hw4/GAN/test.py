@@ -1,4 +1,4 @@
-#VAE
+#GAN
 import sys
 import numpy as np
 import random
@@ -16,11 +16,11 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.utils.data as Data
 import sklearn
-from sklearn.manifold import TSNE
 import csv
 
 IsLoad = True
-load_model = VAE.pkl#"/home/jay/hw4/models/VAEt/VAE_051811_1params.pkl"
+load_modelD = "GAND.pkl"
+load_modelG = "GANG.pkl"
 
 np.set_printoptions(threshold=np.nan)
 
@@ -32,89 +32,64 @@ def main():
     dataPath = (sys.argv[1])
     testPath = dataPath + 'test/'
     csvPath = dataPath + 'test.csv'
-    
     predPath = (sys.argv[2])
+#fig2_2
+    lossD = np.load('GAN/lossD.npy')
+    lossG = np.load('GAN/lossG.npy')
+    fool = np.load('GAN/fool.npy')
+    hit = np.load('GAN/hit.npy')
     
-    encoder = E()
-    decoder = D()
-    model = VAE(encoder, decoder)
+    plt.subplot(1,2,1)
+    plt.title('acc. rate')
+    x_axix = list(range(len(hit)))
+    plt.plot(x_axix, hit, color='green', label='Real')
+    plt.plot(x_axix, fool, color='red', label='Fake')
+    plt.legend()
+    plt.xlabel('steps')
+    plt.ylabel('rate(%)')
+    #plt.savefig(predPath + 'fig2_2.jpg')
+    
+    plt.subplot(1,2,2)
+    plt.title('training curve')
+    x_axix = list(range(len(hit)))
+    plt.plot(x_axix, lossD, color='green', label='D')
+    plt.plot(x_axix, lossG, color='red', label='G')
+    plt.legend()
+    plt.xlabel('steps')
+    plt.ylabel('loss')
+    plt.savefig(predPath + 'fig2_2.jpg')
+
+#fig2_3
+    generator = D()
+    discreminator = Discreminator(E())
     if Iscuda:
-        model.cuda()
-    model.load_state_dict(torch.load(load_model))
-    print("LOADMODEL : ", load_model)
+        generator.cuda()
+        discreminator.cuda()
+    else:
+        print("ERROR: NO MODULE NAMED", structure)
+    
+    discreminator.load_state_dict(torch.load(load_modelD))
+    generator.load_state_dict(torch.load(load_modelG))
+
+    print("LOADMODEL : ", load_modelD)
+    print("LOADMODEL : ", load_modelG)
     print('*'*20, "LOADMODEL", '*'*20)
-#IMGREAD
-    readThrough = True
-    file_list = [file for file in os.listdir(testPath) if file.endswith('.png')]
-    file_list.sort()
     
-    x_train = np.zeros((500, 64, 64, 3))
-    for i, file in enumerate(file_list):
-        if i == 500:
-            break
-        fileAddr = testPath + file
-        readThrough = TryImage(fileAddr) and readThrough
-        if readThrough:
-            x_train[i] = mpimg.imread(fileAddr)
-        else:
-            x_train = []
-            break
-        if i%1000 == 0 and i != 0:
-            print("LOADING X...",i)
-#CSVREAD
-    f = open(csvPath, 'r', newline='')
-    cls = np.zeros((500, 13))
-    count = 0
-    for row in csv.reader(f):
-        if count == 0:
-            count += 1
-            continue
-        if 500 < count:#STDFM1
-            break
-        cls[count - 1] = (np.array(row[1:]))
-        count += 1
-    f.close()
-    cls = cls[:,9]#SMILE
-    cls = cls.astype(int)
-    print(cls.shape)
-    
-    if readThrough:
-        x_train_torch = torch.from_numpy(x_train).double()
-        #cls = torch.from_numpy(cls).double()
-    if Iscuda:
-        x_train_torch = x_train_torch.cuda()
-#TEST10
-    print('*'*20, "REC", '*'*20)
-    print(x_train[0:10].shape)
-    x_train_torch_10 = torch.from_numpy(x_train[0:10]).double()
-    if Iscuda:
-        x_train_torch_10 = x_train_torch_10.cuda()
-    x_rec_gpu = model(x_train_torch_10)
-    x_rec = x_rec_gpu.cpu()
-    pred = x_rec.data.numpy()
-    for i in range(10):
-        image = np.array(pred[i]*256.).astype(int)
-        mpimg.imsave(predPath + "VAE10_" + str(i).zfill(2)+'.png', image)
-#RAND32
     print('*'*20, "RND", '*'*20)
-    noise = torch.randn(32, 512).double()
+    plt.figure(figsize=(40,20))
+    noise = torch.randn(32, 100).double()
     if Iscuda:
         noise = noise.cuda()
-    x_fake_gpu = model.decoder(noise)
+    x_fake_gpu = generator(noise)
     x_fake = x_fake_gpu.cpu()
     pred = x_fake.data.numpy()
     for i in range(32):
+        plt.subplot(4, 8, i+1)
         image = np.array(pred[i]*256.).astype(int)
-        mpimg.imsave(predPath + "VAE32_" + str(i).zfill(2)+'.png', image)
-#TSNE
-    print('*'*20, "TSNE", '*'*20)
-    y_latent_gpu = model.encoder(x_train_torch)
-    y_latent = y_latent_gpu.cpu()
-    latent = y_latent.data.numpy()
-    
-    print('*'*20, "DRAW", '*'*20)
-    latent_tsne = tsne(latent, 2)
-    plot_scatter(latent_tsne, cls, "latent with tsne")
-        
+        plt.imshow(image)
+    plt.axis('off')
+    plt.savefig(predPath + 'fig2_3.jpg')
+    plt.close()
+
 if __name__ == "__main__":
     main()

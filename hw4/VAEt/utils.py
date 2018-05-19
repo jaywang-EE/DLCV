@@ -23,7 +23,7 @@ def plot_scatter(x, labels, title, predPath, txt=False):
                 PathEffects.Stroke(linewidth=5, foreground="w"),
                 PathEffects.Normal()])
             txts.append(txt)
-    plt.savefig(predPath + 'latent_tsne.png')
+    plt.savefig(predPath + 'fig1_5.jpg')
     #plt.show()
 
 def TryImage(filename):
