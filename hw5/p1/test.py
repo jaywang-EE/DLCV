@@ -37,16 +37,6 @@ def main():
         print("LOADTO:", predPath)
     Ntrain = -1
     print('*'*20, "VERSION : "+VERSION, '*'*20)
-#LABELDEFN
-    dictLabel = {}
-    file = open(LABLEDEFN, 'r') 
-    for line in file:
-        tmp = line.split(' ')
-        tmp1 = ''
-        for i in range(len(tmp)-1):
-            tmp1 = tmp1 + tmp[i] + ' '
-        dictLabel[tmp1] = int(tmp[len(tmp)-1])
-    file.close()
 #READVEDIO
     labelData = getVideoList(csvPath)
     print(labelData.keys())#DEBUG
