@@ -37,3 +37,4 @@ MODELDEFAULT = ""
 
 modelPath = "models/10RNN_060110.hdf5"
 modelPathCNN = "models/10CNN_060611.hdf5"
+maxTime = 16
